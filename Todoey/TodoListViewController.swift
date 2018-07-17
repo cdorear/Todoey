@@ -11,9 +11,14 @@ import UIKit
 class TodoListViewController: UITableViewController {
     var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
 
+    //creates new object that uses the UserDefaults interface to the user database where you store key value pairs persistently across launches of the app
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        if let items = defaults.array(forKey: "ToDoListArray") as? [String]{
+            itemArray = items
+        }
     }
 
  
@@ -58,6 +63,10 @@ class TodoListViewController: UITableViewController {
             //what will happen once the user clicks the add item button on UIAlert. We want to append the item array to include whatever is added to the add item button. Because we are inside a close (see the "in" above) we have to specify self to specify that the item array exists within the current class
             self.itemArray.append(textField.text!)
         
+            //saving the item array to the user default will allow it to persist
+            self.defaults.set(self.itemArray, forKey: "ToDoListArray")
+            
+            
             //need to reload the data for the itemArray to take into account the newly added item
             self.tableView.reloadData()
         
