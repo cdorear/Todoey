@@ -9,14 +9,28 @@
 import UIKit
 
 class TodoListViewController: UITableViewController {
-    var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
+    //more detail about this item array in the quizzler module
+    var itemArray = [Item]()
 
     //creates new object that uses the UserDefaults interface to the user database where you store key value pairs persistently across launches of the app
     let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        if let items = defaults.array(forKey: "ToDoListArray") as? [String]{
+        
+        let newItem = Item()
+        newItem.title = "Find Mike"
+        itemArray.append(newItem)
+        
+        let newItem2 = Item()
+        newItem2.title = "Buy Eggos"
+        itemArray.append(newItem)
+        
+        let newItem3 = Item()
+        newItem3.title = "Destroy Demogorgon"
+        itemArray.append(newItem)
+        
+        if let items = defaults.array(forKey: "ToDoListArray") as? [Item]{
             itemArray = items
         }
     }
@@ -28,9 +42,25 @@ class TodoListViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
-        cell.textLabel?.text = itemArray[indexPath.row]
         
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+       
+        let item = itemArray[indexPath.row]
+        
+        cell.textLabel?.text = item.title
+        
+        //Ternary operator
+        // value = condition ? valueIfTrue : valueIfFalse
+        
+        cell.accessoryType = item.done == true ? .checkmark : .none
+        
+//        above code does the same thing
+//        if item.done == true {
+//            cell.accessoryType = .checkmark
+//        } else {
+//            cell.accessoryType = .none
+//        }
+//
         return cell
     
     }
@@ -39,12 +69,18 @@ class TodoListViewController: UITableViewController {
         print(itemArray[indexPath.row])
         //prints number into debug console
         
-        //everytime you select the cell it will add a checkmark
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+        
+        //forces table view to call its data source methods again so that it reloads data that is meant to be inside
+        tableView.reloadData()
+        
+        //everytime you select the cell it will add a checkmark. Got rid of this with the cell.accessory type code above
+//        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .none
+//        } else {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+//        }
         
         //animates the deselction once the item has been tapped. 
         tableView.deselectRow(at: indexPath, animated: true)
@@ -61,7 +97,10 @@ class TodoListViewController: UITableViewController {
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen once the user clicks the add item button on UIAlert. We want to append the item array to include whatever is added to the add item button. Because we are inside a close (see the "in" above) we have to specify self to specify that the item array exists within the current class
-            self.itemArray.append(textField.text!)
+            let newItem = Item()
+            newItem.title = textField.text!
+            
+            self.itemArray.append(newItem)
         
             //saving the item array to the user default will allow it to persist
             self.defaults.set(self.itemArray, forKey: "ToDoListArray")
