@@ -8,7 +8,9 @@
 
 import Foundation
 
-class Item {
+
+//need the codable here to allow the Item class to be encodable and decodable
+class Item: Codable {
     var title : String = ""
     var done : Bool = false
 }

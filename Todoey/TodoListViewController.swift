@@ -13,26 +13,35 @@ class TodoListViewController: UITableViewController {
     var itemArray = [Item]()
 
     //creates new object that uses the UserDefaults interface to the user database where you store key value pairs persistently across launches of the app
-    let defaults = UserDefaults.standard
+//    let defaults = UserDefaults.standard
+    
+    //Create own Pfile at location of data file path
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("pathComponent: Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let newItem = Item()
-        newItem.title = "Find Mike"
-        itemArray.append(newItem)
         
-        let newItem2 = Item()
-        newItem2.title = "Buy Eggos"
-        itemArray.append(newItem)
         
-        let newItem3 = Item()
-        newItem3.title = "Destroy Demogorgon"
-        itemArray.append(newItem)
+        print(dataFilePath)
+     //Don't need the hard coded items because we are calling the loadItems below
+//        let newItem = Item()
+//        newItem.title = "Find Mike"
+//        itemArray.append(newItem)
+//
+//        let newItem2 = Item()
+//        newItem2.title = "Buy Eggos"
+//        itemArray.append(newItem2)
+//
+//        let newItem3 = Item()
+//        newItem3.title = "Destroy Demogorgon"
+//        itemArray.append(newItem3)
         
-        if let items = defaults.array(forKey: "ToDoListArray") as? [Item]{
-            itemArray = items
-        }
+//        if let items = defaults.array(forKey: "ToDoListArray") as? [Item]{
+//            itemArray = items
+//        }
+        
+        loadItems()
     }
 
  
@@ -71,9 +80,10 @@ class TodoListViewController: UITableViewController {
         
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
+        saveItems()
         
         //forces table view to call its data source methods again so that it reloads data that is meant to be inside
-        tableView.reloadData()
+        
         
         //everytime you select the cell it will add a checkmark. Got rid of this with the cell.accessory type code above
 //        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
@@ -103,8 +113,9 @@ class TodoListViewController: UITableViewController {
             self.itemArray.append(newItem)
         
             //saving the item array to the user default will allow it to persist
-            self.defaults.set(self.itemArray, forKey: "ToDoListArray")
-            
+//            self.defaults.set(self.itemArray, forKey: "ToDoListArray")
+           
+            self.saveItems()
             
             //need to reload the data for the itemArray to take into account the newly added item
             self.tableView.reloadData()
@@ -123,6 +134,29 @@ class TodoListViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
         
     }
-    
+    func saveItems(){
+        let encoder = PropertyListEncoder()
+        
+        
+        //encodes data into property list
+        do{
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array, \(error)")
+            
+        }
+        self.tableView.reloadData() 
+    }
+    func loadItems(){
+        if let data = try? Data(contentsOf: dataFilePath!){
+            let decoder = PropertyListDecoder()
+            do{
+                itemArray = try decoder.decode([Item].self, from: data)
+        } catch {
+            print("Error decoding item array, \(error)")
+        }
+    }
+    }
 }
 
